@@ -105,18 +105,18 @@
       height:100dvh;
       display:flex;
       flex-direction:column;
-      gap:5px;
+      gap:4px;
     }
 
     /* ===== Top bar ===== */
     .toprow{
       display:flex;
       align-items:center;
-      gap:6px;
+      gap:4px;
       flex-shrink:0;
     }
     .app-title{
-      font-size:13px;
+      font-size:12px;
       font-weight:600;
       color:var(--muted);
       letter-spacing:0.3px;
@@ -128,9 +128,9 @@
       border:0;
       background:transparent;
       color:var(--muted);
-      border-radius:12px;
-      padding:8px 10px;
-      font-size:13px;
+      border-radius:10px;
+      padding:6px 8px;
+      font-size:12px;
       line-height:1;
       cursor:pointer;
       transition:opacity 100ms, background 100ms;
@@ -259,10 +259,10 @@
       align-items:center;
       justify-content:center;
       gap:8px;
-      padding:14px 10px;
+      padding:10px 10px;
       border:1px solid rgba(255,255,255,0.12);
       border-radius:var(--radius);
-      font-size:16px;
+      font-size:15px;
       font-weight:600;
       font-family:inherit;
       cursor:pointer;
@@ -342,36 +342,6 @@
       opacity:0.4;
       padding:12px;
     }
-
-    /* ===== Bottom toolbar ===== */
-    .toolbar{
-      display:flex;
-      align-items:center;
-      gap:4px;
-      flex-shrink:0;
-      padding:2px 0;
-    }
-    .toolbar .spacer{flex:1}
-
-    .tool-btn{
-      border:1px solid var(--border);
-      background:var(--panel);
-      color:var(--muted);
-      border-radius:10px;
-      padding:8px 12px;
-      font-size:12px;
-      font-weight:500;
-      font-family:inherit;
-      cursor:pointer;
-      transition:opacity 100ms,background 100ms;
-      -webkit-user-select:none;
-      user-select:none;
-      white-space:nowrap;
-    }
-    .tool-btn:hover{background:var(--focus)}
-    .tool-btn:active{opacity:0.7}
-    .tool-btn.active{color:var(--accent);border-color:var(--accentBd)}
-    .tool-btn:disabled{opacity:0.35;cursor:not-allowed}
 
     /* ===== Summary overlay ===== */
     .overlay{
@@ -605,23 +575,26 @@
       margin-bottom:12px;
     }
 
-    /* ===== Play button inside display ===== */
+    /* ===== Play button (floating mini circle) ===== */
+    .display{position:relative}
     .btn-play{
-      margin-top:auto;
-      padding:10px 16px;
+      position:absolute;
+      bottom:10px;
+      right:10px;
+      width:36px;
+      height:36px;
+      padding:0;
       border:1px solid var(--accentBd);
-      border-radius:12px;
+      border-radius:50%;
       background:var(--accentBg);
       color:var(--accent);
-      font-size:14px;
-      font-weight:600;
-      font-family:inherit;
+      font-size:16px;
+      line-height:1;
       cursor:pointer;
       -webkit-user-select:none;
       user-select:none;
-      flex-shrink:0;
-      text-align:center;
       transition:opacity 150ms;
+      z-index:2;
     }
     .btn-play:active{opacity:0.7}
     .btn-play.playing{
@@ -726,6 +699,9 @@
     <!-- Top bar -->
     <div class="toprow">
       <span class="app-title">会議翻譯</span>
+      <button class="icon" id="btnTtsToggle" title="朗讀開關">🔊</button>
+      <button class="icon" id="btnSummary" title="對話紀錄與摘要">📋</button>
+      <button class="icon" id="btnClearAll" title="清除全部">🗑</button>
       <span style="flex:1"></span>
       <button class="icon" id="btnTheme" title="切換主題">◑</button>
       <button class="icon" id="btnSettings" title="設定">⚙</button>
@@ -739,7 +715,7 @@
         <div class="translated" id="translatedJp"></div>
         <div class="original" id="originalJp"></div>
         <div class="placeholder" id="placeholderJp">等待 JP 發言…</div>
-        <button class="btn-play" id="btnPlayJp" style="display:none">🔊 播放翻譯</button>
+        <button class="btn-play" id="btnPlayJp" style="display:none">🔊</button>
       </div>
       <button class="btn-mic" id="btnMicJp">JP 發言</button>
     </div>
@@ -753,18 +729,12 @@
         <div class="placeholder" id="placeholderTw">等待 TW 發言…</div>
         <div class="original" id="originalTw"></div>
         <div class="translated" id="translatedTw"></div>
-        <button class="btn-play" id="btnPlayTw" style="display:none">🔊 播放翻譯</button>
+        <button class="btn-play" id="btnPlayTw" style="display:none">🔊</button>
       </div>
       <button class="btn-mic" id="btnMicTw">TW 發言</button>
     </div>
 
-    <!-- Bottom toolbar -->
-    <div class="toolbar">
-      <button class="tool-btn" id="btnTtsToggle" title="朗讀開關">🔊 朗讀：開</button>
-      <span class="spacer"></span>
-      <button class="tool-btn" id="btnSummary" title="對話紀錄與摘要">📋 紀錄</button>
-      <button class="tool-btn" id="btnClearAll" title="清除全部">🗑 清除</button>
-    </div>
+    <!-- Toolbar buttons moved to top bar -->
   </div>
 
   <div id="toastHost"></div>
@@ -998,7 +968,7 @@
 
     // ========== TTS Toggle ==========
     function updateTtsBtn() {
-      el.btnTtsToggle.textContent = state.ttsOn ? '🔊 朗讀：開' : '🔇 朗讀：關';
+      el.btnTtsToggle.textContent = state.ttsOn ? '🔊' : '🔇';
       el.btnTtsToggle.classList.toggle('active', state.ttsOn);
     }
     el.btnTtsToggle.addEventListener('click', () => {
@@ -1012,14 +982,14 @@
 
     // ========== Play buttons (manual TTS — OpenAI HD priority) ==========
     function setPlayBtnsStop() {
-      el.btnPlayTw.textContent = '⏹ 停止播放';
-      el.btnPlayJp.textContent = '⏹ 停止播放';
+      el.btnPlayTw.textContent = '⏹';
+      el.btnPlayJp.textContent = '⏹';
       el.btnPlayTw.classList.add('playing');
       el.btnPlayJp.classList.add('playing');
     }
     function setPlayBtnsReady() {
-      el.btnPlayTw.textContent = '🔊 播放翻譯';
-      el.btnPlayJp.textContent = '🔊 播放翻譯';
+      el.btnPlayTw.textContent = '🔊';
+      el.btnPlayJp.textContent = '🔊';
       el.btnPlayTw.classList.remove('playing');
       el.btnPlayJp.classList.remove('playing');
     }
