@@ -774,6 +774,7 @@
         speaker: 'TW',
         ttsLocal: 'zh-TW',
         recogLang: 'zh-TW',
+        ttsVolume: 0.8,
         promptName: '繁體中文（台灣）',
         translateExtra: '\n用詞以台灣常用說法，避免簡體用語，標點採全形。口吻自然。',
       },
@@ -782,6 +783,7 @@
         speaker: 'JP',
         ttsLocal: 'ja-JP',
         recogLang: 'ja-JP',
+        ttsVolume: 1.0,
         promptName: '日本語',
         translateExtra: '\n自然で読みやすい標準的な文体で訳す。丁寧語（です・ます）を基本とする。',
       },
@@ -1064,6 +1066,7 @@
           speechSynthesis.cancel();
           const u = new SpeechSynthesisUtterance(text);
           u.lang = localLang;
+          u.volume = LANG[lang]?.ttsVolume ?? 1.0;
           if (voiceCache[localLang]) u.voice = voiceCache[localLang];
           u.onend = onDone;
           u.onerror = onDone;
@@ -1188,6 +1191,7 @@
           speechSynthesis.cancel();
           const u = new SpeechSynthesisUtterance(text);
           u.lang = localLang;
+          u.volume = LANG[lang]?.ttsVolume ?? 1.0;
           if (voiceCache[localLang]) u.voice = voiceCache[localLang];
           u.onend = onDone;
           u.onerror = onDone;
