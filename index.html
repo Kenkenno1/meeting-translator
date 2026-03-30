@@ -1379,6 +1379,55 @@ Your task: revise a machine-translated draft to reach native-speaker quality.
       return draft;
     }
 
+    // ========== Pre-edit source (clean up speech recognition artifacts) ==========
+    function buildPreEditPrompt(lang) {
+      const langName = LANG[lang].promptName;
+      return `You are a speech-to-text post-processor for ${langName}.
+The user dictated text via speech recognition in a business meeting. The raw transcript may contain:
+- Repeated words or phrases (user corrected themselves or repeated for clarity)
+- Filler words or meaningless fragments
+- Minor recognition errors
+
+Your task:
+- Remove obvious repetitions and filler
+- Fix minor recognition errors if the intended word is clear from context
+- Keep the original meaning 100% intact — do NOT rephrase, summarize, or add information
+- Keep the tone and formality level unchanged
+- If the text is already clean, return it as-is
+- Return ONLY the cleaned text, nothing else`;
+    }
+
+    async function preEditSource(text, lang, signal) {
+      if (!text?.trim()) return text;
+      const makeBody = model => ({
+        model, temperature: 0.1,
+        messages: [
+          { role: 'system', content: buildPreEditPrompt(lang) },
+          { role: 'user', content: text },
+        ],
+      });
+      for (const model of modelChain('translate')) {
+        try {
+          const res = await fetch(`${CONFIG.API_BASE}/chat/completions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.apiKey}` },
+            body: JSON.stringify(makeBody(model)), signal,
+          });
+          if (!res.ok) {
+            const t = await safeReadText(res);
+            if (isInvalidModelError(res.status, t)) continue;
+            return text;
+          }
+          const json = await res.json();
+          return (json?.choices?.[0]?.message?.content || '').trim() || text;
+        } catch (e) {
+          if (isAbortError(e)) throw e;
+          return text;
+        }
+      }
+      return text;
+    }
+
     // ========== Full translate + refine pipeline ==========
     async function handleUtterance(speaker, text) {
       if (!text?.trim()) return;
@@ -1405,15 +1454,31 @@ Your task: revise a machine-translated draft to reach native-speaker quality.
       el.placeholderTw.style.display = 'none';
       syncConversationPanels(speaker, text, '');
 
+      const speakerStatusEl = speaker === 'TW' ? el.statusTw : el.statusJp;
       listenerDisplayEl.classList.add('loading');
-      statusEl.textContent = '翻譯中…';
 
       const controller = new AbortController();
       state.controller = controller;
       state.busy = true;
 
       try {
+        // Step 0: Pre-edit source (clean up speech recognition artifacts)
+        speakerStatusEl.textContent = '✎ 整理原文…';
+        statusEl.textContent = '';
+        try {
+          const edited = await preEditSource(text, srcLang, controller.signal);
+          if (!controller.signal.aborted && state.controller === controller && edited && edited !== text) {
+            text = edited;
+            syncConversationPanels(speaker, text, '');
+          }
+        } catch (e) {
+          if (isAbortError(e)) throw e;
+        }
+        if (controller.signal.aborted || state.controller !== controller) throw makeAbortError();
+        speakerStatusEl.textContent = '';
+
         // Step 1: Translate
+        statusEl.textContent = '翻譯中…';
         let translated = await translateText(text, srcLang, tgtLang, controller.signal);
         if (controller.signal.aborted || state.controller !== controller) throw makeAbortError();
         listenerDisplayEl.classList.remove('loading');
@@ -1463,6 +1528,7 @@ Your task: revise a machine-translated draft to reach native-speaker quality.
         if (isAbortError(e)) return;
         listenerDisplayEl.classList.remove('loading');
         statusEl.textContent = '';
+        speakerStatusEl.textContent = '';
         toastError(String(e?.message || e));
       } finally {
         if (state.controller === controller) {
