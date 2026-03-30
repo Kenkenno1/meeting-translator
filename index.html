@@ -1062,7 +1062,7 @@
       const ttsAc = new AbortController();
       state.ttsController = ttsAc;
 
-      // User tapped → try OpenAI HD first (better quality)
+      /* [DEBUG] OpenAI HD TTS disabled for testing — restore by removing this comment block
       if (state.apiKey) {
         try {
           const res = await fetch(CONFIG.TTS_BASE, {
@@ -1086,8 +1086,9 @@
           if (ttsAc.signal.aborted) return;
         }
       }
+      */
 
-      // Fallback: browser TTS
+      // Browser TTS
       if ('speechSynthesis' in window) {
         try {
           speechSynthesis.cancel();
@@ -1226,7 +1227,7 @@
         } catch {}
       }
 
-      // 2) Fallback: OpenAI TTS if browser TTS unavailable
+      /* [DEBUG] OpenAI TTS fallback disabled for testing — restore by removing this comment block
       if (state.apiKey) {
         try {
           const res = await fetch(CONFIG.TTS_BASE, {
@@ -1253,6 +1254,7 @@
           if (ttsAc.signal.aborted) return;
         }
       }
+      */
       onDone();
     }
 
