@@ -2,7 +2,7 @@
 <html lang="zh-Hant" data-theme="dark">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="會議翻譯" />
@@ -12,7 +12,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Noto+Sans+TC:wght@400;600&family=Noto+Sans+JP:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600&family=Noto+Sans+JP:wght@400;600&display=swap" rel="stylesheet">
 
   <style>
     /* ===== Dark theme (default) ===== */
@@ -47,6 +47,8 @@
       --jpColor:#f472b6;
       --logBg:rgba(255,255,255,0.03);
       --summaryBg:rgba(255,255,255,0.04);
+      --micBd:rgba(255,255,255,0.12);
+      --micBg:linear-gradient(135deg,rgba(255,255,255,0.10) 0%,rgba(255,255,255,0.04) 40%,rgba(255,255,255,0.02) 60%,rgba(255,255,255,0.07) 100%);
     }
 
     /* ===== Light theme ===== */
@@ -81,6 +83,8 @@
       --jpColor:#db2777;
       --logBg:rgba(0,0,0,0.02);
       --summaryBg:rgba(0,0,0,0.03);
+      --micBd:rgba(0,0,0,0.08);
+      --micBg:linear-gradient(135deg,rgba(255,255,255,0.6) 0%,rgba(255,255,255,0.3) 50%,rgba(255,255,255,0.5) 100%);
     }
 
     :root{--radius:16px}
@@ -90,7 +94,7 @@
     body{
       background:var(--bg);
       color:var(--text);
-      font-family: Inter, "Noto Sans TC", "Noto Sans JP", system-ui, -apple-system, sans-serif;
+      font-family: system-ui, -apple-system, "Noto Sans TC", "Noto Sans JP", sans-serif;
       -webkit-font-smoothing:antialiased;
       overscroll-behavior:none;
     }
@@ -129,14 +133,19 @@
       background:transparent;
       color:var(--muted);
       border-radius:10px;
-      padding:6px 8px;
-      font-size:12px;
+      padding:10px 12px;
+      font-size:14px;
       line-height:1;
       cursor:pointer;
       transition:opacity 100ms, background 100ms;
       white-space:nowrap;
       -webkit-user-select:none;
       user-select:none;
+      min-width:44px;
+      min-height:44px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
     }
     .icon:hover{background:rgba(128,128,128,0.08)}
     .icon:active{background:rgba(128,128,128,0.15)}
@@ -176,7 +185,6 @@
     .zone-label .status-text{
       font-size:11px;
       color:var(--muted);
-      opacity:0.7;
     }
 
     /* ===== Display panel (translation result) ===== */
@@ -240,11 +248,12 @@
     /* Recording border */
     .display.recording-active{
       border-color:rgba(220,38,38,0.8);
+      box-shadow:0 0 18px rgba(220,38,38,0.35);
       animation:recording-border 1s ease-in-out infinite;
     }
     @keyframes recording-border{
-      0%,100%{border-color:rgba(220,38,38,0.8);box-shadow:0 0 18px rgba(220,38,38,0.35)}
-      50%{border-color:rgba(220,38,38,0.3);box-shadow:0 0 6px rgba(220,38,38,0.10)}
+      0%,100%{border-color:rgba(220,38,38,0.8);opacity:1}
+      50%{border-color:rgba(220,38,38,0.3);opacity:0.7}
     }
 
     /* Speaking glow */
@@ -260,7 +269,7 @@
       justify-content:center;
       gap:8px;
       padding:10px 10px;
-      border:1px solid rgba(255,255,255,0.12);
+      border:1px solid var(--micBd);
       border-radius:var(--radius);
       font-size:15px;
       font-weight:600;
@@ -269,7 +278,7 @@
       -webkit-user-select:none;
       user-select:none;
       transition:box-shadow 200ms, transform 80ms, border-color 200ms, background 200ms;
-      background:linear-gradient(135deg,rgba(255,255,255,0.10) 0%,rgba(255,255,255,0.04) 40%,rgba(255,255,255,0.02) 60%,rgba(255,255,255,0.07) 100%);
+      background:var(--micBg);
       backdrop-filter:blur(10px);
       -webkit-backdrop-filter:blur(10px);
       color:var(--text);
@@ -290,18 +299,14 @@
       border-color:rgba(220,38,38,0.8);
       background:linear-gradient(135deg,rgba(220,38,38,0.85) 0%,rgba(239,68,68,0.90) 50%,rgba(220,38,38,0.85) 100%);
       color:#fff;
+      box-shadow:0 0 28px rgba(220,38,38,0.55);
       animation:mic-pulse 1.5s ease-in-out infinite;
     }
     @keyframes mic-pulse{
-      0%,100%{box-shadow:0 0 10px rgba(220,38,38,0.3)}
-      50%{box-shadow:0 0 28px rgba(220,38,38,0.55)}
+      0%,100%{opacity:0.85}
+      50%{opacity:1}
     }
     .btn-mic:disabled{opacity:0.35;cursor:not-allowed;animation:none}
-
-    [data-theme="light"] .btn-mic{
-      border-color:rgba(0,0,0,0.08);
-      background:linear-gradient(135deg,rgba(255,255,255,0.6) 0%,rgba(255,255,255,0.3) 50%,rgba(255,255,255,0.5) 100%);
-    }
 
     /* ===== Divider ===== */
     .divider{
@@ -395,7 +400,6 @@
     .summary-content{
       font-size:14px;
       line-height:1.8;
-      white-space:pre-wrap;
       word-break:break-word;
     }
     .summary-content:empty::before{
@@ -404,6 +408,41 @@
       opacity:0.4;
       font-style:italic;
     }
+    .summary-content h3{
+      font-size:15px;
+      font-weight:700;
+      margin:18px 0 8px;
+      padding-bottom:4px;
+      border-bottom:1px solid var(--border);
+      color:var(--accent);
+    }
+    .summary-content h3:first-child{margin-top:0}
+    .summary-content p{margin:6px 0}
+    .summary-content ul{
+      margin:6px 0;
+      padding-left:20px;
+    }
+    .summary-content li{margin:3px 0}
+    .summary-content strong{color:var(--text);font-weight:600}
+    .summary-content table{
+      width:100%;
+      border-collapse:collapse;
+      margin:10px 0;
+      font-size:13px;
+    }
+    .summary-content th{
+      text-align:left;
+      padding:6px 8px;
+      border-bottom:2px solid var(--border);
+      color:var(--accent);
+      font-weight:600;
+      font-size:12px;
+    }
+    .summary-content td{
+      padding:5px 8px;
+      border-bottom:1px solid var(--border);
+    }
+    .summary-content tr:last-child td{border-bottom:none}
     .modal-footer{
       padding:12px 20px;
       border-top:1px solid var(--border);
@@ -581,14 +620,14 @@
       position:absolute;
       bottom:10px;
       right:10px;
-      width:36px;
-      height:36px;
+      width:44px;
+      height:44px;
       padding:0;
       border:1px solid var(--accentBd);
       border-radius:50%;
       background:var(--accentBg);
       color:var(--accent);
-      font-size:16px;
+      font-size:18px;
       line-height:1;
       cursor:pointer;
       -webkit-user-select:none;
@@ -607,7 +646,6 @@
     .status-text{
       font-size:11px;
       color:var(--muted);
-      opacity:0.7;
       padding:0 4px;
       flex-shrink:0;
       min-height:14px;
@@ -667,6 +705,17 @@
         <span class="verify-label">驗證連線</span>
       </button>
       <div class="verify-result" id="verifyResult"></div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0" />
+      <div class="field">
+        <label for="glossaryInput">術語表（每行一組：原文 | 譯文）</label>
+        <textarea class="in" id="glossaryInput" rows="4" placeholder="例：專案 | プロジェクト&#10;預算 | 予算" style="resize:vertical;font-size:13px;line-height:1.6"></textarea>
+        <div class="hint">翻譯時會強制使用指定術語，建議 20-50 組以內</div>
+      </div>
+      <div class="field">
+        <label for="meetingContextInput">會前上下文（選填）</label>
+        <textarea class="in" id="meetingContextInput" rows="3" placeholder="貼入會議議程、主題或背景資訊，翻譯時會參考此上下文" style="resize:vertical;font-size:13px;line-height:1.6"></textarea>
+        <div class="hint">提供會議背景可提升翻譯準確度</div>
+      </div>
     </div>
   </div>
 
@@ -691,6 +740,7 @@
       <div class="modal-footer">
         <button class="btn-summary-gen" id="btnGenSummary">📋 產生摘要</button>
         <button class="btn-summary-copy" id="btnCopySummary">複製摘要</button>
+        <button class="btn-summary-copy" id="btnExportLog">下載逐字稿</button>
       </div>
     </div>
   </div>
@@ -699,12 +749,12 @@
     <!-- Top bar -->
     <div class="toprow">
       <span class="app-title">会議翻譯</span>
-      <button class="icon" id="btnTtsToggle" title="朗讀開關">🔊</button>
-      <button class="icon" id="btnSummary" title="對話紀錄與摘要">📋</button>
-      <button class="icon" id="btnClearAll" title="清除全部">🗑</button>
+      <button class="icon" id="btnTtsToggle" title="朗讀開關" aria-label="朗讀開關">🔊</button>
+      <button class="icon" id="btnSummary" title="對話紀錄與摘要" aria-label="對話紀錄與摘要">📋</button>
+      <button class="icon" id="btnClearAll" title="清除全部" aria-label="清除全部">🗑</button>
       <span style="flex:1"></span>
-      <button class="icon" id="btnTheme" title="切換主題">◑</button>
-      <button class="icon" id="btnSettings" title="設定">⚙</button>
+      <button class="icon" id="btnTheme" title="切換主題" aria-label="切換主題">◑</button>
+      <button class="icon" id="btnSettings" title="設定" aria-label="設定">⚙</button>
     </div>
 
     <!-- ===== JP Zone (rotated 180°) ===== -->
@@ -747,6 +797,7 @@
       API_BASE: 'https://api.openai.com/v1',
       TTS_BASE: 'https://api.openai.com/v1/audio/speech',
       TTS_VOICE: 'nova',
+      USE_OPENAI_TTS: false,  // Set true to enable OpenAI HD TTS
       TTS_TIMEOUT_MIN_MS: 15000,
       TOAST_MS: 3000,
       TOAST_COOLDOWN_MS: 800,
@@ -755,12 +806,22 @@
       MAX_RECORDING_MS: 120000,
       MAX_LOG_ENTRIES: 200,
       SUMMARY_TIMEOUT_MS: 45000,
+      MIC_SWITCH_DELAY_MS: 500,
+      MIC_SAFETY_TIMEOUT_MS: 5000,
+      SETTINGS_AUTO_OPEN_DELAY_MS: 400,
     };
+
+    function isMobile() {
+      return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+        || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
+    }
 
     const STORAGE_KEYS = {
       API_KEY: 'meeting_api_key',
       THEME: 'meeting_theme',
       TTS_ON: 'meeting_tts_on',
+      GLOSSARY: 'meeting_glossary',
+      MEETING_CONTEXT: 'meeting_context',
     };
 
     const TRANSLATE_MODEL = 'gpt-5.4-mini';
@@ -815,9 +876,71 @@
         if (timeoutId) clearTimeout(timeoutId);
       }
     }
+    async function fetchWithRetry(url, options, { maxRetries = 2, baseDelay = 1000 } = {}) {
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          const res = await fetch(url, options);
+          if (res.ok || res.status === 404 || res.status === 401) return res;
+          if ((res.status === 429 || res.status >= 500) && attempt < maxRetries) {
+            const ra = res.headers.get('retry-after');
+            const delay = ra ? parseInt(ra, 10) * 1000 : baseDelay * Math.pow(2, attempt) + Math.random() * 500;
+            await new Promise(r => setTimeout(r, delay));
+            continue;
+          }
+          return res;
+        } catch (e) {
+          if (options.signal?.aborted) throw e;
+          if (isAbortError(e)) throw e;
+          if (attempt >= maxRetries) throw e;
+          await new Promise(r => setTimeout(r, baseDelay * Math.pow(2, attempt)));
+        }
+      }
+    }
+
     function isInvalidModelError(status, body) {
       const t = (body || '').toLowerCase();
       return status === 404 || /invalid_model|model.*not found|no such model|unknown model/.test(t);
+    }
+
+    // ========== IndexedDB (conversation persistence) ==========
+    const DB_NAME = 'meetingTranslatorLog';
+    const DB_STORE = 'log';
+    let _db = null;
+    function openDb() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, 1);
+        req.onupgradeneeded = e => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(DB_STORE)) db.createObjectStore(DB_STORE, { keyPath: 'id', autoIncrement: true });
+        };
+        req.onsuccess = e => { _db = e.target.result; resolve(_db); };
+        req.onerror = e => reject(e);
+      });
+    }
+    async function dbPut(entry) {
+      try {
+        if (!_db) await openDb();
+        const tx = _db.transaction(DB_STORE, 'readwrite');
+        tx.objectStore(DB_STORE).add(entry);
+      } catch {}
+    }
+    async function dbLoadAll() {
+      try {
+        if (!_db) await openDb();
+        return new Promise((resolve, reject) => {
+          const tx = _db.transaction(DB_STORE, 'readonly');
+          const req = tx.objectStore(DB_STORE).getAll();
+          req.onsuccess = () => resolve(req.result || []);
+          req.onerror = () => resolve([]);
+        });
+      } catch { return []; }
+    }
+    async function dbClear() {
+      try {
+        if (!_db) await openDb();
+        const tx = _db.transaction(DB_STORE, 'readwrite');
+        tx.objectStore(DB_STORE).clear();
+      } catch {}
     }
 
     // ========== State ==========
@@ -844,6 +967,8 @@
       // Edit mode
       editModeTw: false,
       editModeJp: false,
+      // Offline queue
+      offlineQueue: [],
     };
 
     // ========== DOM ==========
@@ -886,10 +1011,73 @@
       summaryContent: $('summaryContent'),
       btnGenSummary: $('btnGenSummary'),
       btnCopySummary: $('btnCopySummary'),
+      btnExportLog: $('btnExportLog'),
+      glossaryInput: $('glossaryInput'),
+      meetingContextInput: $('meetingContextInput'),
     };
 
     // Init
     el.apiKey.value = state.apiKey;
+    el.glossaryInput.value = lsGet(STORAGE_KEYS.GLOSSARY, '');
+    el.meetingContextInput.value = lsGet(STORAGE_KEYS.MEETING_CONTEXT, '');
+    el.glossaryInput.addEventListener('input', () => lsSet(STORAGE_KEYS.GLOSSARY, el.glossaryInput.value));
+    el.meetingContextInput.addEventListener('input', () => lsSet(STORAGE_KEYS.MEETING_CONTEXT, el.meetingContextInput.value));
+
+    // ========== Markdown renderer (summary) ==========
+    function renderMarkdownToHtml(md) {
+      if (!md) return '';
+      const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const lines = md.split('\n');
+      let html = '', inUl = false, inTable = false, inTbody = false;
+
+      function closeLists() {
+        if (inUl) { html += '</ul>'; inUl = false; }
+        if (inTable) { if (inTbody) { html += '</tbody>'; inTbody = false; } html += '</table>'; inTable = false; }
+      }
+
+      for (let i = 0; i < lines.length; i++) {
+        const raw = lines[i];
+        const line = raw.trim();
+        if (!line) { closeLists(); continue; }
+
+        // Heading ###
+        const hm = line.match(/^(#{1,4})\s+(.+)$/);
+        if (hm) { closeLists(); html += `<h3>${inline(esc(hm[2]))}</h3>`; continue; }
+
+        // Table row
+        if (line.startsWith('|') && line.endsWith('|')) {
+          const cells = line.slice(1, -1).split('|').map(c => c.trim());
+          if (cells.every(c => /^[-:]+$/.test(c))) continue;
+          if (!inTable) {
+            closeLists();
+            html += '<table><thead><tr>' + cells.map(c => `<th>${inline(esc(c))}</th>`).join('') + '</tr></thead>';
+            inTable = true;
+            continue;
+          }
+          if (!inTbody) { html += '<tbody>'; inTbody = true; }
+          html += '<tr>' + cells.map(c => `<td>${inline(esc(c))}</td>`).join('') + '</tr>';
+          continue;
+        }
+
+        // Unordered list
+        const lm = line.match(/^[-*]\s+(.+)$/);
+        if (lm) {
+          if (inTable) { if (inTbody) { html += '</tbody>'; inTbody = false; } html += '</table>'; inTable = false; }
+          if (!inUl) { html += '<ul>'; inUl = true; }
+          html += `<li>${inline(esc(lm[1]))}</li>`;
+          continue;
+        }
+
+        // Paragraph
+        closeLists();
+        html += `<p>${inline(esc(line))}</p>`;
+      }
+      closeLists();
+      return html;
+    }
+    function inline(s) {
+      return s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    }
 
     // ========== Toast ==========
     const toastHost = $('toastHost');
@@ -996,26 +1184,16 @@
       el.btnPlayJp.classList.remove('playing');
     }
 
-    async function handlePlayBtn(btn) {
-      if (!btn._ttsText || !btn._ttsLang) return;
-
-      // If already playing, stop
-      if (state.speaking) {
-        stopSpeaking();
-        setPlayBtnsReady();
-        return;
-      }
-
-      const text = btn._ttsText;
-      const lang = btn._ttsLang;
+    // Core TTS playback logic shared by handlePlayBtn and speak.
+    // openAiFirst: true = try OpenAI before browser; false = browser first.
+    // afterDone: optional callback after TTS finishes.
+    async function playTtsCore(text, lang, { openAiFirst = false, afterDone } = {}) {
       const localLang = LANG[lang].ttsLocal;
       const gen = ++state.speakGeneration;
       state.speaking = true;
 
       const display = getDisplayForLang(lang);
       display.classList.add('speaking-glow');
-      // Both buttons become stop buttons immediately
-      setPlayBtnsStop();
 
       const onDone = () => {
         if (gen !== state.speakGeneration) return;
@@ -1026,7 +1204,7 @@
         state.ttsController = null;
         clearAudioObjectUrl();
         state.lastTtsEndedAt = Date.now();
-        setPlayBtnsReady();
+        if (afterDone) afterDone();
       };
 
       const charMs = /[\u3040-\u9fff]/.test(text) ? 120 : 80;
@@ -1034,8 +1212,8 @@
       const ttsAc = new AbortController();
       state.ttsController = ttsAc;
 
-      /* [DEBUG] OpenAI HD TTS disabled for testing — restore by removing this comment block
-      if (state.apiKey) {
+      const tryOpenAi = async () => {
+        if (!CONFIG.USE_OPENAI_TTS || !state.apiKey) return false;
         try {
           const res = await fetch(CONFIG.TTS_BASE, {
             method: 'POST',
@@ -1052,16 +1230,16 @@
             await audio.play();
             const dur = isFinite(audio.duration) ? audio.duration * 1000 : dynamicTimeout;
             state.ttsTimeout = setTimeout(() => { if (state.speaking) stopSpeaking(); }, dur + 5000);
-            return;
+            return true;
           }
         } catch (e) {
-          if (ttsAc.signal.aborted) return;
+          if (ttsAc.signal.aborted) return true; // aborted, don't fallback
         }
-      }
-      */
+        return false;
+      };
 
-      // Browser TTS
-      if ('speechSynthesis' in window) {
+      const tryBrowser = () => {
+        if (!('speechSynthesis' in window)) return false;
         try {
           speechSynthesis.cancel();
           const u = new SpeechSynthesisUtterance(text);
@@ -1072,13 +1250,35 @@
           u.onerror = onDone;
           speechSynthesis.speak(u);
           state.ttsTimeout = setTimeout(() => { if (state.speaking) stopSpeaking(); }, dynamicTimeout * 3);
-          return;
+          return true;
         } catch {}
-      }
+        return false;
+      };
+
+      const first = openAiFirst ? tryOpenAi : tryBrowser;
+      const second = openAiFirst ? tryBrowser : tryOpenAi;
+      if (await first()) return;
+      if (await second()) return;
       onDone();
+    }
+
+    async function handlePlayBtn(btn) {
+      if (!btn._ttsText || !btn._ttsLang) return;
+      if (state.speaking) { stopSpeaking(); setPlayBtnsReady(); return; }
+      setPlayBtnsStop();
+      await playTtsCore(btn._ttsText, btn._ttsLang, {
+        openAiFirst: true,
+        afterDone: setPlayBtnsReady,
+      });
     }
     el.btnPlayTw.addEventListener('click', () => handlePlayBtn(el.btnPlayTw));
     el.btnPlayJp.addEventListener('click', () => handlePlayBtn(el.btnPlayJp));
+
+    // ========== Overlay helper ==========
+    function toggleOverlay(overlay, show) {
+      overlay.classList.toggle('show', !!show);
+      overlay.setAttribute('aria-hidden', show ? 'false' : 'true');
+    }
 
     // ========== Settings ==========
     el.btnSettings.addEventListener('click', () => openSettings(true));
@@ -1086,8 +1286,7 @@
     el.settingsOverlay.addEventListener('click', e => { if (e.target === el.settingsOverlay) openSettings(false); });
 
     function openSettings(show) {
-      el.settingsOverlay.classList.toggle('show', !!show);
-      el.settingsOverlay.setAttribute('aria-hidden', show ? 'false' : 'true');
+      toggleOverlay(el.settingsOverlay, show);
       if (show) {
         el.apiKey.focus();
         el.verifyResult.textContent = '';
@@ -1160,76 +1359,7 @@
       if (!text?.trim() || !state.ttsOn) return;
       if (state.speaking) stopSpeaking();
       if ('speechSynthesis' in window) speechSynthesis.cancel();
-
-      const gen = ++state.speakGeneration;
-      const localLang = LANG[lang].ttsLocal;
-      state.speaking = true;
-
-      // Determine which display to glow
-      const display = getDisplayForLang(lang);
-      display.classList.add('speaking-glow');
-
-      const onDone = () => {
-        if (gen !== state.speakGeneration) return;
-        if (state.ttsTimeout) { clearTimeout(state.ttsTimeout); state.ttsTimeout = null; }
-        display.classList.remove('speaking-glow');
-        state.speaking = false;
-        state.audioEl = null;
-        state.ttsController = null;
-        clearAudioObjectUrl();
-        state.lastTtsEndedAt = Date.now();
-      };
-
-      const charMs = /[\u3040-\u9fff]/.test(text) ? 120 : 80;
-      const dynamicTimeout = Math.max(CONFIG.TTS_TIMEOUT_MIN_MS, text.length * charMs);
-      const ttsAc = new AbortController();
-      state.ttsController = ttsAc;
-
-      // 1) Browser TTS first (instant playback)
-      if ('speechSynthesis' in window) {
-        try {
-          speechSynthesis.cancel();
-          const u = new SpeechSynthesisUtterance(text);
-          u.lang = localLang;
-          u.volume = LANG[lang]?.ttsVolume ?? 1.0;
-          if (voiceCache[localLang]) u.voice = voiceCache[localLang];
-          u.onend = onDone;
-          u.onerror = onDone;
-          speechSynthesis.speak(u);
-          state.ttsTimeout = setTimeout(() => { if (state.speaking) stopSpeaking(); }, dynamicTimeout * 3);
-          return;
-        } catch {}
-      }
-
-      /* [DEBUG] OpenAI TTS fallback disabled for testing — restore by removing this comment block
-      if (state.apiKey) {
-        try {
-          const res = await fetch(CONFIG.TTS_BASE, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${state.apiKey}`,
-            },
-            body: JSON.stringify({ model: 'tts-1', input: text, voice: CONFIG.TTS_VOICE, response_format: 'mp3' }),
-            signal: ttsAc.signal,
-          });
-          if (res.ok) {
-            const buf = await res.arrayBuffer();
-            const audio = createAudioFromBuffer(buf);
-            state.audioEl = audio;
-            audio.onended = onDone;
-            audio.onerror = onDone;
-            await audio.play();
-            const dur = isFinite(audio.duration) ? audio.duration * 1000 : dynamicTimeout;
-            state.ttsTimeout = setTimeout(() => { if (state.speaking) stopSpeaking(); }, dur + 5000);
-            return;
-          }
-        } catch (e) {
-          if (ttsAc.signal.aborted) return;
-        }
-      }
-      */
-      onDone();
+      await playTtsCore(text, lang, { openAiFirst: false });
     }
 
     function stopSpeaking() {
@@ -1250,6 +1380,19 @@
     }
 
     // ========== Translation ==========
+    function getGlossaryBlock() {
+      const raw = (el.glossaryInput?.value || '').trim();
+      if (!raw) return '';
+      const lines = raw.split('\n').filter(l => l.includes('|')).slice(0, 50);
+      if (lines.length === 0) return '';
+      return `\n\nGlossary (MUST use these translations when the source term appears):\n${lines.map(l => '- ' + l.trim()).join('\n')}`;
+    }
+    function getMeetingContextBlock() {
+      const raw = (el.meetingContextInput?.value || '').trim();
+      if (!raw) return '';
+      return `\n\nMeeting context for reference:\n${raw}`;
+    }
+
     function buildSystemPrompt(tgtLang) {
       const lang = LANG[tgtLang];
       return `You are a professional interpreter for business meetings between Traditional Chinese (Taiwan) and Japanese.
@@ -1257,7 +1400,7 @@
 - Keep meaning exact; no added or missing information.
 - Use polite, natural language suitable for business meetings.
 - Preserve: numbers, dates, proper nouns, company names.
-- Do not include explanations—return translation only.${lang.translateExtra}`;
+- Do not include explanations—return translation only.${lang.translateExtra}${getGlossaryBlock()}${getMeetingContextBlock()}`;
     }
 
     function buildRefineSystemPrompt(tgtLang) {
@@ -1273,28 +1416,85 @@ Your task: revise a machine-translated draft to reach native-speaker quality.
 - Match appropriate formality for business meetings.${extra[tgtLang] || ''}`;
     }
 
+    const _modelCache = {}; // { translate: 'gpt-...', refine: 'gpt-...' }
+    const _translateCache = new Map(); // key: 'srcLang|tgtLang|text' → translated
+    const _TRANSLATE_CACHE_MAX = 100;
     function modelChain(type) {
-      return type === 'refine' ? REFINE_FALLBACK : TRANSLATE_FALLBACK;
+      const chain = type === 'refine' ? REFINE_FALLBACK : TRANSLATE_FALLBACK;
+      // If we have a cached working model, put it first
+      if (_modelCache[type] && chain.includes(_modelCache[type])) {
+        return [_modelCache[type], ...chain.filter(m => m !== _modelCache[type])];
+      }
+      return chain;
+    }
+
+    // Shared non-streaming API call with model fallback.
+    // If `fallback` is provided, returns it on error instead of throwing.
+    // `cacheKey` — if set, caches the successful model in _modelCache.
+    async function callChatApi({ messages, temperature, models, signal, fallback, cacheKey }) {
+      for (const model of models) {
+        try {
+          const res = await fetchWithRetry(`${CONFIG.API_BASE}/chat/completions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.apiKey}` },
+            body: JSON.stringify({ model, temperature, messages }),
+            signal,
+          });
+          if (!res.ok) {
+            const t = await safeReadText(res);
+            if (isInvalidModelError(res.status, t)) continue;
+            if (fallback !== undefined) return fallback;
+            throw new Error(t || `HTTP ${res.status}`);
+          }
+          if (cacheKey) _modelCache[cacheKey] = model;
+          const json = await res.json();
+          return (json?.choices?.[0]?.message?.content || '').trim() || (fallback !== undefined ? fallback : '');
+        } catch (e) {
+          if (isAbortError(e)) throw e;
+          if (fallback !== undefined) return fallback;
+          throw e;
+        }
+      }
+      if (fallback !== undefined) return fallback;
+      throw new Error('No available model');
+    }
+
+    /*
+     * Translation pipeline (3 stages):
+     *  1. preEditSource  — 清理語音辨識產物（贅字、斷句），不改語意
+     *  2. translateText   — 串流翻譯（streaming），即時顯示結果
+     *  3. refineTranslation — 背景潤稿，完成後更新 UI；桌面版在此階段後才朗讀
+     *
+     * 呼叫順序見 handleUtterance()
+     */
+    function buildConversationContext() {
+      if (state.log.length === 0) return '';
+      const recent = state.log.slice(-5);
+      return recent.map(e => `[${e.speaker}] ${e.original} → ${e.translated}`).join('\n');
     }
 
     async function translateText(text, srcLang, tgtLang, signal) {
+      const context = buildConversationContext();
+      const contextBlock = context
+        ? `\nRecent conversation for context (use for consistency of terminology and pronoun resolution, do NOT translate these lines):\n${context}\n\n---\n`
+        : '';
       const makeBody = model => ({
         model, stream: true, temperature: CONFIG.TEMP_TRANSLATE,
         messages: [
           { role: 'system', content: buildSystemPrompt(tgtLang) },
-          { role: 'user', content: `Translate from ${srcLang} to ${tgtLang}. Return only the translation.\n\nSOURCE:\n${text}` },
+          { role: 'user', content: `${contextBlock}Translate from ${srcLang} to ${tgtLang}. Return only the translation.\n\nSOURCE:\n${text}` },
         ],
       });
 
-      let res = null, lastText = '';
+      let res = null, lastText = '', usedModel = '';
       for (const model of modelChain('translate')) {
-        res = await fetch(`${CONFIG.API_BASE}/chat/completions`, {
+        res = await fetchWithRetry(`${CONFIG.API_BASE}/chat/completions`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.apiKey}` },
           body: JSON.stringify(makeBody(model)),
           signal,
         });
-        if (res.ok && res.body) break;
+        if (res.ok && res.body) { usedModel = model; break; }
         lastText = await safeReadText(res);
         if (!isInvalidModelError(res.status, lastText)) break;
       }
@@ -1342,6 +1542,7 @@ Your task: revise a machine-translated draft to reach native-speaker quality.
           try { result += JSON.parse(data)?.choices?.[0]?.delta?.content || ''; } catch {}
         }
         if (signal.aborted) throw makeAbortError();
+        if (usedModel) _modelCache.translate = usedModel;
         return result.trim();
       } catch (e) {
         if (signal.aborted || isAbortError(e)) {
@@ -1359,28 +1560,17 @@ Your task: revise a machine-translated draft to reach native-speaker quality.
 
     async function refineTranslation(source, draft, srcLang, tgtLang, signal) {
       if (!draft?.trim()) return draft;
-      const makeBody = model => ({
-        model, temperature: CONFIG.TEMP_REFINE,
+      return callChatApi({
         messages: [
           { role: 'system', content: buildRefineSystemPrompt(tgtLang) },
           { role: 'user', content: `Revise this translation to native-speaker quality.\n\nSource (${srcLang}):\n${source}\n\nDraft (${tgtLang}):\n${draft}\n\nReturn ONLY the improved translation.` },
         ],
+        temperature: CONFIG.TEMP_REFINE,
+        models: modelChain('refine'),
+        signal,
+        fallback: draft,
+        cacheKey: 'refine',
       });
-      for (const model of modelChain('refine')) {
-        const res = await fetch(`${CONFIG.API_BASE}/chat/completions`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.apiKey}` },
-          body: JSON.stringify(makeBody(model)), signal,
-        });
-        if (!res.ok) {
-          const t = await safeReadText(res);
-          if (isInvalidModelError(res.status, t)) continue;
-          return draft;
-        }
-        const json = await res.json();
-        return (json?.choices?.[0]?.message?.content || '').trim() || draft;
-      }
-      return draft;
     }
 
     // ========== Pre-edit source (clean up speech recognition artifacts) ==========
@@ -1403,39 +1593,34 @@ Your task:
 
     async function preEditSource(text, lang, signal) {
       if (!text?.trim()) return text;
-      const makeBody = model => ({
-        model, temperature: 0.1,
+      return callChatApi({
         messages: [
           { role: 'system', content: buildPreEditPrompt(lang) },
           { role: 'user', content: text },
         ],
+        temperature: 0.1,
+        models: modelChain('translate'),
+        signal,
+        fallback: text,
+        cacheKey: 'translate',
       });
-      for (const model of modelChain('translate')) {
-        try {
-          const res = await fetch(`${CONFIG.API_BASE}/chat/completions`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.apiKey}` },
-            body: JSON.stringify(makeBody(model)), signal,
-          });
-          if (!res.ok) {
-            const t = await safeReadText(res);
-            if (isInvalidModelError(res.status, t)) continue;
-            return text;
-          }
-          const json = await res.json();
-          return (json?.choices?.[0]?.message?.content || '').trim() || text;
-        } catch (e) {
-          if (isAbortError(e)) throw e;
-          return text;
-        }
-      }
-      return text;
     }
 
     // ========== Full translate + refine pipeline ==========
     async function handleUtterance(speaker, text) {
       if (!text?.trim()) return;
       if (!state.apiKey) { toastError('請先點右上角 ⚙ 輸入 API Key'); return; }
+
+      // Offline: queue for later
+      if (!navigator.onLine) {
+        state.offlineQueue.push({ speaker, text });
+        syncConversationPanels(speaker, text, '（離線中，恢復網路後自動翻譯）');
+        toast('已暫存，恢復網路後自動翻譯');
+        return;
+      }
+
+      // Abort any in-flight translation before starting new one
+      abortInFlight();
 
       // Lock editing during translation
       setEditable(false);
@@ -1467,6 +1652,7 @@ Your task:
 
       try {
         // Step 0: Pre-edit source (clean up speech recognition artifacts)
+        const rawText = text; // preserve raw speech recognition output
         speakerStatusEl.textContent = '✎ 整理原文…';
         statusEl.textContent = '';
         try {
@@ -1481,52 +1667,80 @@ Your task:
         if (controller.signal.aborted || state.controller !== controller) throw makeAbortError();
         speakerStatusEl.textContent = '';
 
-        // Step 1: Translate
-        statusEl.textContent = '翻譯中…';
-        let translated = await translateText(text, srcLang, tgtLang, controller.signal);
+        // Step 1: Translate (check cache first)
+        const cacheKey = `${srcLang}|${tgtLang}|${text.trim()}`;
+        let translated;
+        if (_translateCache.has(cacheKey)) {
+          translated = _translateCache.get(cacheKey);
+        } else {
+          statusEl.textContent = '翻譯中…';
+          translated = await translateText(text, srcLang, tgtLang, controller.signal);
+          // Store in cache (LRU eviction)
+          _translateCache.set(cacheKey, translated);
+          if (_translateCache.size > _TRANSLATE_CACHE_MAX) {
+            _translateCache.delete(_translateCache.keys().next().value);
+          }
+        }
         if (controller.signal.aborted || state.controller !== controller) throw makeAbortError();
         listenerDisplayEl.classList.remove('loading');
         syncConversationPanels(speaker, text, translated);
-
-        // Step 2: Refine
-        statusEl.textContent = '✦ 潤稿中…';
-        try {
-          const refined = await refineTranslation(text, translated, srcLang, tgtLang, controller.signal);
-          if (!controller.signal.aborted && state.controller === controller && refined && refined !== translated) {
-            translated = refined;
-            syncConversationPanels(speaker, text, translated);
-          }
-        } catch (e) {
-          if (!isAbortError(e)) console.warn('Refine failed:', e);
-        }
-        if (controller.signal.aborted || state.controller !== controller) throw makeAbortError();
         statusEl.textContent = '';
 
-        // Add to log
-        addLogEntry(speaker, text, translated);
+        // Immediately: log + TTS (don't wait for refine)
+        // Use rawText for log so original speech is preserved
+        addLogEntry(speaker, rawText, translated);
+        const logIdx = state.log.length - 1;
 
-        // TTS: store translation info on BOTH play buttons
         el.btnPlayTw._ttsText = translated;
         el.btnPlayTw._ttsLang = tgtLang;
         el.btnPlayJp._ttsText = translated;
         el.btnPlayJp._ttsLang = tgtLang;
 
-        if (state.ttsOn && !controller.signal.aborted) {
-          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
-          if (isMobile) {
-            // Mobile: show play button on BOTH displays (user may only see their own side)
-            el.btnPlayTw.style.display = '';
-            el.btnPlayJp.style.display = '';
-          } else {
-            // Desktop: auto play, no button needed
-            speak(translated, tgtLang);
-            el.btnPlayTw.style.display = 'none';
-            el.btnPlayJp.style.display = 'none';
-          }
-        } else {
+        const wantTts = state.ttsOn && !controller.signal.aborted;
+        const mobile = isMobile();
+        if (wantTts && mobile) {
+          // Mobile: show play buttons (user triggers manually)
+          el.btnPlayTw.style.display = '';
+          el.btnPlayJp.style.display = '';
+        } else if (!wantTts || !mobile) {
           el.btnPlayTw.style.display = 'none';
           el.btnPlayJp.style.display = 'none';
         }
+
+        // Step 2: Refine in background, then TTS with final text (desktop)
+        const refineSignal = controller.signal;
+        refineTranslation(text, translated, srcLang, tgtLang, refineSignal)
+          .then(refined => {
+            if (refineSignal.aborted) return;
+            const finalText = (refined && refined !== translated) ? refined : translated;
+            if (refined && refined !== translated) {
+              // Update UI
+              syncConversationPanels(speaker, text, refined);
+              // Update log entry
+              if (state.log[logIdx] && state.log[logIdx].translated === translated) {
+                state.log[logIdx].translated = refined;
+                const logEntry = el.logList.querySelectorAll('.log-entry')[logIdx];
+                if (logEntry) {
+                  const transEl = logEntry.querySelector('.log-translated');
+                  if (transEl) transEl.textContent = '\u2192 ' + refined;
+                }
+              }
+              // Update play button text
+              el.btnPlayTw._ttsText = refined;
+              el.btnPlayJp._ttsText = refined;
+            }
+            // Desktop auto-TTS: speak after refine completes (with best available text)
+            if (wantTts && !mobile && !refineSignal.aborted) {
+              speak(finalText, tgtLang);
+            }
+          })
+          .catch(e => {
+            if (!isAbortError(e)) console.warn('Refine failed:', e);
+            // Refine failed: still speak the initial translation on desktop
+            if (wantTts && !mobile && !refineSignal.aborted) {
+              speak(translated, tgtLang);
+            }
+          });
 
       } catch (e) {
         if (isAbortError(e)) return;
@@ -1555,14 +1769,16 @@ Your task:
     function addLogEntry(speaker, original, translated) {
       abortSummary();
       state.summaryRequestId += 1;
-      state.log.push({ speaker, original, translated, time: new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }) });
+      const entry = { speaker, original, translated, time: new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }) };
+      state.log.push(entry);
+      dbPut({ ...entry });
       // Trim oldest entries if over limit
       while (state.log.length > CONFIG.MAX_LOG_ENTRIES) {
         state.log.shift();
         const oldest = el.logList.querySelector('.log-entry');
         if (oldest) oldest.remove();
       }
-      el.summaryContent.textContent = '';
+      el.summaryContent.innerHTML = '';
       $('summarySection').style.display = 'none';
       el.btnGenSummary.disabled = false;
       el.btnGenSummary.textContent = '📋 產生摘要';
@@ -1600,7 +1816,7 @@ Your task:
       }
     }
 
-    function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
 
     // ========== Editable Text ==========
     function setEditable(enabled) {
@@ -1614,28 +1830,29 @@ Your task:
       }
     }
 
+    const _editCfg = {
+      TW: { stateKey: 'editModeTw', btn: () => el.btnMicTw },
+      JP: { stateKey: 'editModeJp', btn: () => el.btnMicJp },
+    };
+
+    function micLabel(speaker) {
+      return SpeechRecognition ? `${speaker} 發言` : `${speaker} 輸入`;
+    }
+
     function enterEditMode(speaker) {
-      if (speaker === 'TW' && !state.editModeTw) {
-        state.editModeTw = true;
-        el.btnMicTw.classList.add('translate-mode');
-        el.btnMicTw.textContent = '翻譯';
-      } else if (speaker === 'JP' && !state.editModeJp) {
-        state.editModeJp = true;
-        el.btnMicJp.classList.add('translate-mode');
-        el.btnMicJp.textContent = '翻譯';
-      }
+      const cfg = _editCfg[speaker];
+      if (state[cfg.stateKey]) return;
+      state[cfg.stateKey] = true;
+      cfg.btn().classList.add('translate-mode');
+      cfg.btn().textContent = '翻譯';
     }
 
     function exitEditMode(speaker) {
-      if (speaker === 'TW' && state.editModeTw) {
-        state.editModeTw = false;
-        el.btnMicTw.classList.remove('translate-mode');
-        el.btnMicTw.textContent = 'TW 發言';
-      } else if (speaker === 'JP' && state.editModeJp) {
-        state.editModeJp = false;
-        el.btnMicJp.classList.remove('translate-mode');
-        el.btnMicJp.textContent = 'JP 發言';
-      }
+      const cfg = _editCfg[speaker];
+      if (!state[cfg.stateKey]) return;
+      state[cfg.stateKey] = false;
+      cfg.btn().classList.remove('translate-mode');
+      cfg.btn().textContent = micLabel(speaker);
     }
 
     function handleEditTranslate(speaker) {
@@ -1651,6 +1868,15 @@ Your task:
       }
       handleUtterance(speaker, text);
     }
+
+    // Force plain text on paste into contenteditable divs
+    function handlePaste(e) {
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+      document.execCommand('insertText', false, text);
+    }
+    el.translatedTw.addEventListener('paste', handlePaste);
+    el.translatedJp.addEventListener('paste', handlePaste);
 
     // Listen for input events on translated divs
     el.translatedTw.addEventListener('input', () => {
@@ -1677,13 +1903,20 @@ Your task:
     let activeRecognition = null;
     let activeMicSpeaker = null; // 'TW' | 'JP'
     let _micDelayTimer = null;
+    let _micMaxTimer = null;
+    // Mic permission is handled by the browser natively when SpeechRecognition.start() is called.
+    // Do NOT call getUserMedia() proactively — it causes a double-prompt on file:// protocol.
 
     if (!SpeechRecognition) {
-      el.btnMicTw.disabled = true;
-      el.btnMicJp.disabled = true;
+      // Don't disable buttons — they're also used for typed-input translate mode.
+      // Instead, show hint text and block mic start in toggleMic/startMic.
+      el.btnMicTw.textContent = 'TW 輸入';
+      el.btnMicJp.textContent = 'JP 輸入';
       const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
       if (isStandalone && /iPhone|iPad|iPod/.test(navigator.userAgent)) {
         toast('語音輸入需在 Safari 中使用，PWA 模式暫不支援');
+      } else {
+        toast('此瀏覽器不支援語音辨識，可手動輸入文字翻譯');
       }
     }
 
@@ -1694,6 +1927,13 @@ Your task:
       // If in edit/translate mode, trigger translation instead of mic
       if ((speaker === 'TW' && state.editModeTw) || (speaker === 'JP' && state.editModeJp)) {
         handleEditTranslate(speaker);
+        return;
+      }
+
+      // No speech recognition: focus the input area so user can type
+      if (!SpeechRecognition) {
+        const textEl = speaker === 'TW' ? el.translatedTw : el.translatedJp;
+        textEl.focus();
         return;
       }
 
@@ -1708,13 +1948,13 @@ Your task:
         // Stop current then start new
         const pending = speaker;
         try { activeRecognition.stop(); } catch {}
-        _micDelayTimer = setTimeout(() => { _micDelayTimer = null; startMic(pending); }, 500);
+        _micDelayTimer = setTimeout(() => { _micDelayTimer = null; startMic(pending); }, CONFIG.MIC_SWITCH_DELAY_MS);
         return;
       }
       startMic(speaker);
     }
 
-    function startMic(speaker) {
+    async function startMic(speaker) {
       if (!SpeechRecognition) return;
       if (state.busy) {
         toast('上一句仍在翻譯中，請稍候');
@@ -1739,6 +1979,7 @@ Your task:
     function startMicCore(speaker) {
       // Lock editing during recording
       setEditable(false);
+      requestWakeLock();
 
       const lang = speaker === 'TW' ? 'zh-TW' : 'ja';
       const recognition = new SpeechRecognition();
@@ -1751,7 +1992,6 @@ Your task:
       let lastInterim = '';
       let micGotEvent = false;
       let micSafetyTimer = null;
-      let micMaxTimer = null;
       let clearedTranscript = false;
 
       const btn = speaker === 'TW' ? el.btnMicTw : el.btnMicJp;
@@ -1788,6 +2028,7 @@ Your task:
       };
 
       recognition.onresult = (event) => {
+        if (activeRecognition !== recognition) return; // stale instance guard
         micGotEvent = true;
         clearMicTimers();
         if (!clearedTranscript) {
@@ -1818,7 +2059,7 @@ Your task:
 
       recognition.onend = () => {
         clearMicTimers();
-        if (micMaxTimer) { clearTimeout(micMaxTimer); micMaxTimer = null; }
+        if (_micMaxTimer) { clearTimeout(_micMaxTimer); _micMaxTimer = null; }
         if (activeRecognition !== recognition) return;
         stopMic();
         const text = (finalTranscript || lastInterim || '').trim();
@@ -1843,9 +2084,9 @@ Your task:
           toast('語音辨識無回應，請再試一次');
           stopMic();
         }
-      }, 5000);
+      }, CONFIG.MIC_SAFETY_TIMEOUT_MS);
 
-      micMaxTimer = setTimeout(() => {
+      _micMaxTimer = setTimeout(() => {
         if (activeRecognition === recognition) {
           toast('已達最大錄音時間，自動停止');
           try { recognition.stop(); } catch {}
@@ -1858,6 +2099,7 @@ Your task:
 
     function stopMic() {
       if (_micDelayTimer) { clearTimeout(_micDelayTimer); _micDelayTimer = null; }
+      if (_micMaxTimer) { clearTimeout(_micMaxTimer); _micMaxTimer = null; }
       if (activeRecognition) {
         const rec = activeRecognition;
         activeRecognition = null;
@@ -1866,13 +2108,13 @@ Your task:
       }
       el.btnMicTw.classList.remove('recording', 'mic-pending');
       el.btnMicJp.classList.remove('recording', 'mic-pending');
-      el.btnMicTw.textContent = 'TW 發言';
-      el.btnMicJp.textContent = 'JP 發言';
+      el.btnMicTw.textContent = micLabel('TW');
+      el.btnMicJp.textContent = micLabel('JP');
       el.displayTw.classList.remove('recording-active');
       el.displayJp.classList.remove('recording-active');
       activeMicSpeaker = null;
       state.lastMicEndedAt = Date.now();
-      if (!state.busy) setEditable(true);
+      if (!state.busy) { setEditable(true); releaseWakeLock(); }
     }
 
     // ========== Clear All ==========
@@ -1883,6 +2125,7 @@ Your task:
       abortSummary();
       state.summaryRequestId += 1;
       state.log = [];
+      dbClear();
       el.logList.querySelectorAll('.log-entry').forEach(e => e.remove());
       el.logEmpty.style.display = '';
       el.logCount.textContent = '(0)';
@@ -1896,7 +2139,7 @@ Your task:
       el.statusJp.textContent = '';
       el.btnPlayTw.style.display = 'none';
       el.btnPlayJp.style.display = 'none';
-      el.summaryContent.textContent = '';
+      el.summaryContent.innerHTML = '';
       el.btnGenSummary.disabled = false;
       el.btnGenSummary.textContent = '📋 產生摘要';
       $('summarySection').style.display = 'none';
@@ -1907,19 +2150,10 @@ Your task:
     });
 
     // ========== Summary ==========
-    el.btnSummary.addEventListener('click', () => {
-      el.summaryOverlay.classList.add('show');
-      el.summaryOverlay.setAttribute('aria-hidden', 'false');
-    });
-    el.btnCloseSummary.addEventListener('click', () => {
-      el.summaryOverlay.classList.remove('show');
-      el.summaryOverlay.setAttribute('aria-hidden', 'true');
-    });
+    el.btnSummary.addEventListener('click', () => toggleOverlay(el.summaryOverlay, true));
+    el.btnCloseSummary.addEventListener('click', () => toggleOverlay(el.summaryOverlay, false));
     el.summaryOverlay.addEventListener('click', e => {
-      if (e.target === el.summaryOverlay) {
-        el.summaryOverlay.classList.remove('show');
-        el.summaryOverlay.setAttribute('aria-hidden', 'true');
-      }
+      if (e.target === el.summaryOverlay) toggleOverlay(el.summaryOverlay, false);
     });
 
     el.btnGenSummary.addEventListener('click', async () => {
@@ -1936,7 +2170,7 @@ Your task:
 
       el.btnGenSummary.disabled = true;
       el.btnGenSummary.textContent = '分析中…';
-      el.summaryContent.textContent = '';
+      el.summaryContent.innerHTML = '';
 
       const transcript = state.log.map(e => `[${e.time}] ${e.speaker}: ${e.original}\n    → ${e.translated}`).join('\n\n');
 
@@ -1951,8 +2185,16 @@ Your task:
 ### 重點事項
 - （條列式重點，每項一行）
 
-### 待辦 / 提醒
-- （需要後續跟進的事項）
+### 待辦事項（Action Items）
+- [ ] （具體待辦事項）— 負責人：（若有提及）/ 期限：（若有提及）
+- [ ] （下一步行動）
+（若對話中無明確待辦事項，寫「無明確待辦事項」即可）
+
+### 決議事項
+- （會議中達成共識或做出的決定）
+
+### 待確認 / 提醒
+- （需要後續跟進但尚未有結論的事項）
 - （約定的時間、地點、金額等具體資訊）
 
 ### 關鍵詞彙對照
@@ -1965,35 +2207,20 @@ Your task:
 - 如有未解決的分歧或疑問，特別標示`;
 
       try {
-        const makeBody = model => ({
-          model, temperature: 0.3,
+        const result = await callChatApi({
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: `以下是會議對話紀錄：\n\n${transcript}` },
           ],
+          temperature: 0.3,
+          models: SUMMARY_MODEL_FALLBACK,
+          signal: summaryController.signal,
+          cacheKey: 'refine',
         });
-
-        let result = '';
-        for (const model of SUMMARY_MODEL_FALLBACK) {
-          const res = await fetch(`${CONFIG.API_BASE}/chat/completions`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.apiKey}` },
-            body: JSON.stringify(makeBody(model)),
-            signal: summaryController.signal,
-          });
-          if (!res.ok) {
-            const t = await safeReadText(res);
-            if (isInvalidModelError(res.status, t)) continue;
-            throw new Error(`HTTP ${res.status}`);
-          }
-          const json = await res.json();
-          result = (json?.choices?.[0]?.message?.content || '').trim();
-          break;
-        }
         if (summaryController.signal.aborted || state.summaryController !== summaryController || state.summaryRequestId !== requestId) {
           throw makeAbortError();
         }
-        el.summaryContent.textContent = result || '（無法產生摘要）';
+        el.summaryContent.innerHTML = result ? renderMarkdownToHtml(result) : '（無法產生摘要）';
         $('summarySection').style.display = '';
         // Scroll to summary
         const logBody = $('logBody');
@@ -2020,6 +2247,51 @@ Your task:
       } catch { toast('複製失敗'); }
     });
 
+    el.btnExportLog.addEventListener('click', () => {
+      if (state.log.length === 0) { toast('尚無對話紀錄可匯出'); return; }
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+      const timeStr = now.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }).replace(':', '');
+      let content = `會議翻譯逐字稿（中日）\n匯出時間：${now.toLocaleString('zh-TW')}\n${'═'.repeat(50)}\n\n`;
+      state.log.forEach(e => {
+        content += `[${e.time}] ${e.speaker}\n  原文：${e.original}\n  翻譯：${e.translated}\n\n`;
+      });
+      const summaryText = el.summaryContent.textContent.trim();
+      if (summaryText) {
+        content += `${'═'.repeat(50)}\n會議摘要\n${'═'.repeat(50)}\n\n${summaryText}\n`;
+      }
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `會議逐字稿_${dateStr}_${timeStr}.txt`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      toast('已下載逐字稿');
+    });
+
+    // ========== Online / Offline detection ==========
+    window.addEventListener('offline', () => toast('網路已斷開，語音辨識仍可使用，翻譯將在恢復後進行'));
+    window.addEventListener('online', () => {
+      toast('網路已恢復');
+      while (state.offlineQueue.length > 0) {
+        const item = state.offlineQueue.shift();
+        handleUtterance(item.speaker, item.text);
+      }
+    });
+
+    // ========== Wake Lock (keep screen on during meeting) ==========
+    let _wakeLock = null;
+    async function requestWakeLock() {
+      if (_wakeLock || !('wakeLock' in navigator)) return;
+      try { _wakeLock = await navigator.wakeLock.request('screen'); _wakeLock.addEventListener('release', () => { _wakeLock = null; }); } catch {}
+    }
+    function releaseWakeLock() {
+      if (_wakeLock) { try { _wakeLock.release(); } catch {} _wakeLock = null; }
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && (activeRecognition || state.busy)) requestWakeLock();
+    });
+
     // ========== Cleanup ==========
     window.addEventListener('beforeunload', () => {
       stopMic();
@@ -2029,14 +2301,24 @@ Your task:
       if (state.audioEl) try { state.audioEl.pause(); } catch {}
       if ('speechSynthesis' in window) speechSynthesis.cancel();
       if (state.ttsTimeout) clearTimeout(state.ttsTimeout);
+      releaseWakeLock();
     });
 
     // ========== Init ==========
-    (function init() {
+    (async function init() {
       el.btnVerify.disabled = !state.apiKey;
-      if (!state.apiKey) setTimeout(() => openSettings(true), 400);
+      if (!state.apiKey) setTimeout(() => openSettings(true), CONFIG.SETTINGS_AUTO_OPEN_DELAY_MS);
       // Enable editing on translated divs
       setEditable(true);
+      // Restore conversation log from IndexedDB
+      try {
+        const saved = await dbLoadAll();
+        if (saved.length > 0) {
+          saved.forEach(e => state.log.push({ speaker: e.speaker, original: e.original, translated: e.translated, time: e.time }));
+          renderLog();
+          toast(`已恢復 ${saved.length} 筆對話紀錄`);
+        }
+      } catch {}
     })();
   </script>
 </body>
