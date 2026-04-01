@@ -763,7 +763,7 @@
       <span class="status-text" id="statusJp"></span>
       <div class="display" id="displayJp">
         <div class="translated" id="translatedJp"></div>
-        <div class="original" id="originalJp"></div>
+        <div class="original" id="originalJp" style="display:none"></div>
         <div class="placeholder" id="placeholderJp">等待 JP 發言…</div>
         <button class="btn-play" id="btnPlayJp" style="display:none">🔊</button>
       </div>
@@ -777,7 +777,7 @@
       <span class="status-text" id="statusTw"></span>
       <div class="display" id="displayTw">
         <div class="placeholder" id="placeholderTw">等待 TW 發言…</div>
-        <div class="original" id="originalTw"></div>
+        <div class="original" id="originalTw" style="display:none"></div>
         <div class="translated" id="translatedTw"></div>
         <button class="btn-play" id="btnPlayTw" style="display:none">🔊</button>
       </div>
@@ -1111,13 +1111,9 @@
       const translated = translatedText || '';
       if (speaker === 'TW') {
         el.translatedTw.textContent = source;
-        el.originalTw.textContent = translated;
-        el.originalJp.textContent = source;
         el.translatedJp.textContent = translated;
       } else {
         el.translatedJp.textContent = source;
-        el.originalJp.textContent = translated;
-        el.originalTw.textContent = source;
         el.translatedTw.textContent = translated;
       }
     }
