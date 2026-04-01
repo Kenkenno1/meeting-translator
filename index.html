@@ -57,7 +57,7 @@
       --panel:rgba(0,0,0,0.03);
       --panel2:rgba(0,0,0,0.01);
       --border:rgba(0,0,0,0.08);
-      --muted:rgba(0,0,0,0.50);
+      --muted:rgba(0,0,0,0.62);
       --text:rgba(0,0,0,0.88);
       --danger:rgba(220,53,69,0.95);
       --dangerBg:rgba(220,53,69,0.08);
@@ -159,6 +159,9 @@
       flex:1;
       min-height:0;
     }
+    /* NOTE: rotate(180deg) may cause scroll/touch direction to feel reversed
+       inside .display when content overflows. A JS-based scroll reversal or
+       DOM restructuring would fix it, but needs real-device testing first. */
     .zone-jp{
       transform:rotate(180deg);
     }
@@ -562,7 +565,7 @@
     /* ===== Toast ===== */
     #toastHost{
       position:fixed;
-      bottom:max(16px, env(safe-area-inset-bottom, 16px));
+      top:max(12px, env(safe-area-inset-top, 12px));
       left:50%;
       transform:translateX(-50%);
       z-index:9999;
@@ -584,14 +587,14 @@
       line-height:1.5;
       box-shadow:0 4px 16px rgba(0,0,0,0.3);
       opacity:0;
-      transform:translateY(8px);
+      transform:translateY(-8px);
       transition:opacity 120ms ease,transform 120ms ease;
       pointer-events:auto;
       cursor:pointer;
       text-align:center;
     }
     .toast-item.show{opacity:1;transform:translateY(0)}
-    .toast-item.out{opacity:0;transform:translateY(8px)}
+    .toast-item.out{opacity:0;transform:translateY(-8px)}
     .toast-item.toast-error{border-color:var(--dangerBd);background:var(--dangerBg);color:var(--danger)}
 
     /* ===== Summary section inside log overlay ===== */
@@ -920,8 +923,30 @@
     async function dbPut(entry) {
       try {
         if (!_db) await openDb();
+        return new Promise((resolve) => {
+          const tx = _db.transaction(DB_STORE, 'readwrite');
+          const req = tx.objectStore(DB_STORE).add(entry);
+          req.onsuccess = () => resolve(req.result); // returns auto-incremented id
+          req.onerror = () => resolve(null);
+        });
+      } catch { return null; }
+    }
+    async function dbUpdate(id, changes) {
+      try {
+        if (!_db || !id) return;
         const tx = _db.transaction(DB_STORE, 'readwrite');
-        tx.objectStore(DB_STORE).add(entry);
+        const store = tx.objectStore(DB_STORE);
+        const req = store.get(id);
+        req.onsuccess = () => {
+          if (req.result) store.put(Object.assign(req.result, changes));
+        };
+      } catch {}
+    }
+    async function dbDeleteById(id) {
+      try {
+        if (!_db || !id) return;
+        const tx = _db.transaction(DB_STORE, 'readwrite');
+        tx.objectStore(DB_STORE).delete(id);
       } catch {}
     }
     async function dbLoadAll() {
@@ -1274,7 +1299,42 @@
     function toggleOverlay(overlay, show) {
       overlay.classList.toggle('show', !!show);
       overlay.setAttribute('aria-hidden', show ? 'false' : 'true');
+      if (show) {
+        overlay._prevFocus = document.activeElement;
+        const first = overlay.querySelector('button, input, textarea, [tabindex]:not([tabindex="-1"])');
+        if (first) first.focus();
+      } else if (overlay._prevFocus) {
+        overlay._prevFocus.focus();
+        overlay._prevFocus = null;
+      }
     }
+
+    // Focus trap + ESC for modals
+    document.addEventListener('keydown', (e) => {
+      const openOverlay =
+        el.settingsOverlay.classList.contains('show') ? el.settingsOverlay :
+        el.summaryOverlay.classList.contains('show') ? el.summaryOverlay : null;
+      if (!openOverlay) return;
+
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        toggleOverlay(openOverlay, false);
+        return;
+      }
+
+      if (e.key === 'Tab') {
+        const modal = openOverlay.querySelector('[role="dialog"]') || openOverlay.firstElementChild;
+        const focusable = modal.querySelectorAll('button, input, textarea, select, a[href], [tabindex]:not([tabindex="-1"])');
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+        } else {
+          if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+      }
+    });
 
     // ========== Settings ==========
     el.btnSettings.addEventListener('click', () => openSettings(true));
@@ -1618,6 +1678,9 @@ Your task:
       // Abort any in-flight translation before starting new one
       abortInFlight();
 
+      // Keep screen on during translation + refine + TTS pipeline
+      requestWakeLock();
+
       // Lock editing during translation
       setEditable(false);
       stopSpeaking();
@@ -1687,18 +1750,28 @@ Your task:
         addLogEntry(speaker, rawText, translated);
         const logIdx = state.log.length - 1;
 
-        el.btnPlayTw._ttsText = translated;
-        el.btnPlayTw._ttsLang = tgtLang;
-        el.btnPlayJp._ttsText = translated;
-        el.btnPlayJp._ttsLang = tgtLang;
+        // Each side's play button reads aloud in that side's language
+        if (speaker === 'TW') {
+          // TW spoke Chinese → TW side replays Chinese original, JP side replays Japanese translation
+          el.btnPlayTw._ttsText = text;
+          el.btnPlayTw._ttsLang = srcLang;
+          el.btnPlayJp._ttsText = translated;
+          el.btnPlayJp._ttsLang = tgtLang;
+        } else {
+          // JP spoke Japanese → JP side replays Japanese original, TW side replays Chinese translation
+          el.btnPlayJp._ttsText = text;
+          el.btnPlayJp._ttsLang = srcLang;
+          el.btnPlayTw._ttsText = translated;
+          el.btnPlayTw._ttsLang = tgtLang;
+        }
 
-        const wantTts = state.ttsOn && !controller.signal.aborted;
+        const wantAutoTts = state.ttsOn && !controller.signal.aborted;
         const mobile = isMobile();
-        if (wantTts && mobile) {
-          // Mobile: show play buttons (user triggers manually)
+        if (mobile) {
+          // Mobile: always show play buttons for manual replay (independent of TTS toggle)
           el.btnPlayTw.style.display = '';
           el.btnPlayJp.style.display = '';
-        } else if (!wantTts || !mobile) {
+        } else {
           el.btnPlayTw.style.display = 'none';
           el.btnPlayJp.style.display = 'none';
         }
@@ -1712,28 +1785,32 @@ Your task:
             if (refined && refined !== translated) {
               // Update UI
               syncConversationPanels(speaker, text, refined);
-              // Update log entry
+              // Update log entry (memory + DOM + DB)
               if (state.log[logIdx] && state.log[logIdx].translated === translated) {
                 state.log[logIdx].translated = refined;
+                if (state.log[logIdx]._dbId) dbUpdate(state.log[logIdx]._dbId, { translated: refined });
                 const logEntry = el.logList.querySelectorAll('.log-entry')[logIdx];
                 if (logEntry) {
                   const transEl = logEntry.querySelector('.log-translated');
                   if (transEl) transEl.textContent = '\u2192 ' + refined;
                 }
               }
-              // Update play button text
-              el.btnPlayTw._ttsText = refined;
-              el.btnPlayJp._ttsText = refined;
+              // Update play button text (only the listener side gets refined translation)
+              if (speaker === 'TW') {
+                el.btnPlayJp._ttsText = refined;
+              } else {
+                el.btnPlayTw._ttsText = refined;
+              }
             }
             // Desktop auto-TTS: speak after refine completes (with best available text)
-            if (wantTts && !mobile && !refineSignal.aborted) {
+            if (wantAutoTts && !mobile && !refineSignal.aborted) {
               speak(finalText, tgtLang);
             }
           })
           .catch(e => {
             if (!isAbortError(e)) console.warn('Refine failed:', e);
             // Refine failed: still speak the initial translation on desktop
-            if (wantTts && !mobile && !refineSignal.aborted) {
+            if (wantAutoTts && !mobile && !refineSignal.aborted) {
               speak(translated, tgtLang);
             }
           });
@@ -1750,6 +1827,8 @@ Your task:
           state.busy = false;
           state.controller = null;
           setEditable(!activeRecognition);
+          // Release wake lock only if mic is also idle
+          if (!activeRecognition) releaseWakeLock();
         }
       }
     }
@@ -1762,15 +1841,16 @@ Your task:
     }
 
     // ========== Conversation Log ==========
-    function addLogEntry(speaker, original, translated) {
+    async function addLogEntry(speaker, original, translated) {
       abortSummary();
       state.summaryRequestId += 1;
       const entry = { speaker, original, translated, time: new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }) };
       state.log.push(entry);
-      dbPut({ ...entry });
+      entry._dbId = await dbPut({ speaker, original, translated, time: entry.time });
       // Trim oldest entries if over limit
       while (state.log.length > CONFIG.MAX_LOG_ENTRIES) {
-        state.log.shift();
+        const removed = state.log.shift();
+        if (removed._dbId) dbDeleteById(removed._dbId);
         const oldest = el.logList.querySelector('.log-entry');
         if (oldest) oldest.remove();
       }
@@ -1781,16 +1861,7 @@ Your task:
       renderLog();
     }
 
-    function renderLog() {
-      el.logCount.textContent = `(${state.log.length})`;
-      if (state.log.length === 0) {
-        el.logEmpty.style.display = '';
-        return;
-      }
-      el.logEmpty.style.display = 'none';
-
-      // Only add newest entry (append)
-      const entry = state.log[state.log.length - 1];
+    function _buildLogEntryEl(entry) {
       const div = document.createElement('div');
       div.className = 'log-entry';
       const spk = document.createElement('div');
@@ -1803,7 +1874,28 @@ Your task:
       trans.className = 'log-translated';
       trans.textContent = '\u2192 ' + entry.translated;
       div.append(spk, orig, trans);
-      el.logList.appendChild(div);
+      return div;
+    }
+
+    function renderLog(batchAll) {
+      el.logCount.textContent = `(${state.log.length})`;
+      if (state.log.length === 0) {
+        el.logEmpty.style.display = '';
+        return;
+      }
+      el.logEmpty.style.display = 'none';
+
+      if (batchAll) {
+        // Bulk render: rebuild all entries at once (used for DB restore)
+        const frag = document.createDocumentFragment();
+        for (const entry of state.log) frag.appendChild(_buildLogEntryEl(entry));
+        // Remove existing entries but keep logEmpty
+        el.logList.querySelectorAll('.log-entry').forEach(e => e.remove());
+        el.logList.appendChild(frag);
+      } else {
+        // Append only newest entry
+        el.logList.appendChild(_buildLogEntryEl(state.log[state.log.length - 1]));
+      }
 
       // Auto scroll log body if overlay is open
       const logBody = $('logBody');
@@ -1900,6 +1992,7 @@ Your task:
     let activeMicSpeaker = null; // 'TW' | 'JP'
     let _micDelayTimer = null;
     let _micMaxTimer = null;
+    let _micSwitchPending = null; // speaker to auto-start after current mic stops
     // Mic permission is handled by the browser natively when SpeechRecognition.start() is called.
     // Do NOT call getUserMedia() proactively — it causes a double-prompt on file:// protocol.
 
@@ -1934,17 +2027,17 @@ Your task:
       }
 
       if (_micDelayTimer) { clearTimeout(_micDelayTimer); _micDelayTimer = null; }
+      _micSwitchPending = null; // cancel any prior pending switch
 
       if (activeRecognition && activeMicSpeaker === speaker) {
-        // Stop current
+        // Stop current (same side)
         try { activeRecognition.stop(); } catch {}
         return;
       }
       if (activeRecognition) {
-        // Stop current then start new
-        const pending = speaker;
+        // Switching sides: mark pending, let onend handle delayed start
+        _micSwitchPending = speaker;
         try { activeRecognition.stop(); } catch {}
-        _micDelayTimer = setTimeout(() => { _micDelayTimer = null; startMic(pending); }, CONFIG.MIC_SWITCH_DELAY_MS);
         return;
       }
       startMic(speaker);
@@ -2046,6 +2139,7 @@ Your task:
         micGotEvent = true;
         clearMicTimers();
         if (event.error === 'aborted') return;
+        _micSwitchPending = null; // cancel pending switch on error
         if (event.error === 'no-speech') toast('沒有偵測到語音，請再試一次');
         else if (event.error === 'not-allowed') toastError('請允許麥克風權限');
         else if (event.error === 'audio-capture') toastError('無法存取麥克風');
@@ -2055,11 +2149,17 @@ Your task:
 
       recognition.onend = () => {
         clearMicTimers();
+        if (activeRecognition !== recognition) return; // stale instance — don't touch shared state
         if (_micMaxTimer) { clearTimeout(_micMaxTimer); _micMaxTimer = null; }
-        if (activeRecognition !== recognition) return;
+        const pendingSwitch = _micSwitchPending;
+        _micSwitchPending = null;
         stopMic();
         const text = (finalTranscript || lastInterim || '').trim();
         if (text) handleUtterance(speaker, text);
+        // Start the other side's mic after switch delay
+        if (pendingSwitch) {
+          _micDelayTimer = setTimeout(() => { _micDelayTimer = null; startMic(pendingSwitch); }, CONFIG.MIC_SWITCH_DELAY_MS);
+        }
       };
 
       activeRecognition = recognition;
@@ -2115,7 +2215,9 @@ Your task:
 
     // ========== Clear All ==========
     el.btnClearAll.addEventListener('click', () => {
+      if (!confirm('確定要清除所有對話紀錄？')) return;
       stopSpeaking();
+      _micSwitchPending = null;
       stopMic();
       abortInFlight();
       abortSummary();
@@ -2267,11 +2369,11 @@ Your task:
 
     // ========== Online / Offline detection ==========
     window.addEventListener('offline', () => toast('網路已斷開，語音辨識仍可使用，翻譯將在恢復後進行'));
-    window.addEventListener('online', () => {
+    window.addEventListener('online', async () => {
       toast('網路已恢復');
       while (state.offlineQueue.length > 0) {
         const item = state.offlineQueue.shift();
-        handleUtterance(item.speaker, item.text);
+        await handleUtterance(item.speaker, item.text);
       }
     });
 
@@ -2290,6 +2392,7 @@ Your task:
 
     // ========== Cleanup ==========
     window.addEventListener('beforeunload', () => {
+      _micSwitchPending = null;
       stopMic();
       if (state.controller) try { state.controller.abort(); } catch {}
       abortSummary();
@@ -2310,8 +2413,8 @@ Your task:
       try {
         const saved = await dbLoadAll();
         if (saved.length > 0) {
-          saved.forEach(e => state.log.push({ speaker: e.speaker, original: e.original, translated: e.translated, time: e.time }));
-          renderLog();
+          saved.forEach(e => state.log.push({ speaker: e.speaker, original: e.original, translated: e.translated, time: e.time, _dbId: e.id }));
+          renderLog(true);
           toast(`已恢復 ${saved.length} 筆對話紀錄`);
         }
       } catch {}
